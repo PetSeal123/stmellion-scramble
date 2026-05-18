@@ -53,7 +53,7 @@
         }
         .team-title { font-weight: bold; font-size: 0.85rem; border-bottom: 1px solid #eee; padding-bottom: 5px; margin-bottom: 8px; }
         .counter-row { display: flex; justify-content: space-between; align-items: center; margin: 5px 0; font-size: 0.9rem;}
-        .counter-btn { background: #e0e0e0; border: none; padding: 5px 10px; font-weight: bold; border-radius: 4px; }
+        .counter-btn { background: #e0e0e0; border: none; padding: 5px 10px; font-weight: bold; border-radius: 4px; font-size: 1.1rem; width: 30px; }
         
         .table-container {
             background: white;
@@ -65,10 +65,10 @@
         th { background-color: var(--primary); color: white; padding: 10px 5px; font-size: 0.8rem; }
         td { padding: 8px 4px; border-bottom: 1px solid #eee; }
         .si-hole { background-color: #fffde7; font-weight: bold; }
-        input[type="number"] { width: 40px; padding: 5px; text-align: center; border: 1px solid #ccc; border-radius: 4px; font-size: 1rem; }
-        .net-score { font-size: 0.75rem; color: #666; display: block; }
-        .win-p { background-color: #d4edda; }
-        .win-a { background-color: #fff3cd; }
+        input[type="number"] { width: 45px; padding: 6px; text-align: center; border: 1px solid #ccc; border-radius: 4px; font-size: 1.1rem; }
+        .net-score { font-size: 0.75rem; color: #cc2900; display: block; font-weight: bold; margin-top: 2px; }
+        .win-p { background-color: #d4edda; font-weight: bold; color: #155724; }
+        .win-a { background-color: #fff3cd; font-weight: bold; color: #856404; }
     </style>
 </head>
 <body>
@@ -152,6 +152,7 @@
 
     function initScorecard() {
         const tbody = document.getElementById('scorecardBody');
+        tbody.innerHTML = ""; // Clear existing
         courseData.forEach(h => {
             const isShotHole = shotHoles.includes(h.hole);
             const row = document.createElement('tr');
@@ -179,8 +180,8 @@
     }
 
     function calculateMatch() {
-        let p&jWins = 0;
-        let a&gWins = 0;
+        let pjWins = 0;
+        let agWins = 0;
 
         courseData.forEach(h => {
             const pInput = document.getElementById(`pGross-${h.hole}`).value;
@@ -190,7 +191,7 @@
             resTd.className = ''; 
             resTd.innerText = '-';
 
-            if (pInput && aInput) {
+            if (pInput !== "" && aInput !== "") {
                 let pNet = parseInt(pInput);
                 let aNet = parseInt(aInput);
                 
@@ -200,11 +201,11 @@
                 }
 
                 if (pNet < aNet) {
-                    p&jWins++;
+                    pjWins++;
                     resTd.innerText = "P&J";
                     resTd.classList.add('win-p');
                 } else if (aNet < pNet) {
-                    a&gWins++;
+                    agWins++;
                     resTd.innerText = "A&G";
                     resTd.classList.add('win-a');
                 } else {
@@ -216,14 +217,14 @@
         });
 
         const statusDisplay = document.getElementById('matchStatus');
-        if (p&jWins === a&gWins) {
+        if (pjWins === agWins) {
             statusDisplay.innerText = "All Square";
             statusDisplay.style.color = "var(--primary)";
-        } else if (p&jWins > a&gWins) {
-            statusDisplay.innerText = `Pete & John ${p&jWins - a&gWins} Up`;
+        } else if (pjWins > agWins) {
+            statusDisplay.innerText = `Pete & John ${pjWins - agWins} Up`;
             statusDisplay.style.color = "#1b5e20";
         } else {
-            statusDisplay.innerText = `Andy & Gav ${a&gWins - p&jWins} Up`;
+            statusDisplay.innerText = `Andy & Gav ${agWins - pjWins} Up`;
             statusDisplay.style.color = "#b7950b";
         }
     }
