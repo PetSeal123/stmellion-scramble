@@ -74,6 +74,31 @@
         .status-alert { color: #d9534f; }
         .status-ok { color: #28a745; }
 
+        .share-container {
+            display: none;
+            text-align: center;
+            margin-bottom: 15px;
+        }
+        .share-btn {
+            background-color: var(--primary);
+            color: white;
+            border: 2px solid var(--secondary);
+            padding: 10px 15px;
+            font-weight: bold;
+            border-radius: 6px;
+            cursor: pointer;
+            width: 100%;
+            font-size: 0.95rem;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .share-toast {
+            display: none;
+            color: var(--unlocked);
+            font-weight: bold;
+            font-size: 0.85rem;
+            margin-top: 5px;
+        }
+
         .table-container {
             background: white;
             border-radius: 8px;
@@ -175,6 +200,11 @@
     </div>
 </div>
 
+<div id="shareBox" class="share-container">
+    <button class="share-btn" onclick="generateSpectatorLink()">📱 Copy Live Update Link for Group Chat</button>
+    <div id="shareToast" class="share-toast">✓ Link copied! Paste it into WhatsApp.</div>
+</div>
+
 <div class="table-container">
     <table>
         <thead>
@@ -213,27 +243,43 @@
         const urlParams = new URLSearchParams(window.location.search);
         if (urlParams.get('admin') === 'sm26-pete-admin') {
             isAdmin = true;
-            const banner = document.getElementById('modeBanner');
-            banner.innerText = "🔓 Admin Mode Active";
-            banner.className = "mode-banner mode-unlocked";
+            document.getElementById('modeBanner').innerText = "🔓 Admin Mode Active";
+            document.getElementById('modeBanner').className = "mode-banner mode-unlocked";
             document.getElementById('adminFooter').style.display = 'block';
+            document.getElementById('shareBox').style.display = 'block';
         }
     }
 
-    function loadSavedData() {
-        // Load drives
-        if (localStorage.getItem('scramble_drives')) {
+    function loadSavedOrSharedData() {
+        const urlParams = new URLSearchParams(window.location.search);
+        
+        // If data is passed inside the URL link (Spectator Mode update)
+        if (urlParams.has('data')) {
+            try {
+                const package = JSON.parse(decodeURIComponent(urlParams.get('data')));
+                drives = package.drives;
+                
+                // Write scores straight into localStorage for continuous display
+                courseData.forEach(h => {
+                    if (package.scores.p[h.hole] !== undefined) localStorage.setItem(`score_p_${h.hole}`, package.scores.p[h.hole]);
+                    if (package.scores.a[h.hole] !== undefined) localStorage.setItem(`score_a_${h.hole}`, package.scores.a[h.hole]);
+                });
+                localStorage.setItem('scramble_drives', JSON.stringify(drives));
+            } catch(e) { console.error("Could not parse shared sync data", e); }
+        } else if (localStorage.getItem('scramble_drives')) {
+            // Otherwise fallback to existing standalone local browser stashes
             drives = JSON.parse(localStorage.getItem('scramble_drives'));
-            document.getElementById('peteDrives').innerText = drives.pete;
-            document.getElementById('johnDrives').innerText = drives.john;
-            document.getElementById('andyDrives').innerText = drives.andy;
-            document.getElementById('gavDrives').innerText = drives.gav;
         }
+        
+        document.getElementById('peteDrives').innerText = drives.pete;
+        document.getElementById('johnDrives').innerText = drives.john;
+        document.getElementById('andyDrives').innerText = drives.andy;
+        document.getElementById('gavDrives').innerText = drives.gav;
     }
 
     function initScorecard() {
         checkAdmin();
-        loadSavedData();
+        loadSavedOrSharedData();
         
         const tbody = document.getElementById('scorecardBody');
         tbody.innerHTML = "";
@@ -243,7 +289,6 @@
             const row = document.createElement('tr');
             if (isShotHole) row.classList.add('si-hole');
             
-            // Look for cached scores
             const savedP = localStorage.getItem(`score_p_${h.hole}`) || "";
             const savedA = localStorage.getItem(`score_a_${h.hole}`) || "";
             
@@ -269,6 +314,29 @@
         calculateMatch();
     }
 
+    function generateSpectatorLink() {
+        let package = {
+            drives: drives,
+            scores: { p: {}, a: {} }
+        };
+
+        courseData.forEach(h => {
+            package.scores.p[h.hole] = document.getElementById(`pGross-${h.hole}`).value;
+            package.scores.a[h.hole] = document.getElementById(`aGross-${h.hole}`).value;
+        });
+
+        const baseUrl = window.location.origin + window.location.pathname;
+        const stringifiedData = encodeURIComponent(JSON.stringify(package));
+        const finalShareUrl = `${baseUrl}?data=${stringifiedData}`;
+
+        // Copy link to device clipboard automatically
+        navigator.clipboard.writeText(finalShareUrl).then(() => {
+            const toast = document.getElementById('shareToast');
+            toast.style.display = 'block';
+            setTimeout(() => { toast.style.display = 'none'; }, 3000);
+        });
+    }
+
     function validateAndCalculate(holeNum, teamPrefix) {
         const input = document.getElementById(`${teamPrefix}Gross-${holeNum}`);
         let val = input.value;
@@ -279,7 +347,6 @@
             if (num < 0) input.value = 0;
         }
         
-        // Save score change instantly
         localStorage.setItem(`score_${teamPrefix}_${holeNum}`, input.value);
         calculateMatch();
     }
@@ -289,9 +356,7 @@
         drives[player] = Math.max(0, drives[player] + amount);
         document.getElementById(`${player}Drives`).innerText = drives[player];
         
-        // Save drive counts instantly
         localStorage.setItem('scramble_drives', JSON.stringify(drives));
-        
         updateDriveButtons();
         calculateMatch();
     }
@@ -366,7 +431,7 @@
         });
 
         const statusDisplay = document.getElementById('matchStatus');
-        if (pjWins === agWins) {
+        if (pjWins === a&gWins) {
             statusDisplay.innerText = "All Square";
             statusDisplay.style.color = "var(--primary)";
         } else if (pjWins > agWins) {
@@ -382,12 +447,11 @@
         if (confirm("Are you sure you want to reset the whole card? This cannot be undone!")) {
             localStorage.clear();
             drives = { pete: 0, john: 0, andy: 0, gav: 0 };
-            initScorecard();
+            window.location.href = window.location.origin + window.location.pathname + "?admin=sm26-pete-admin";
         }
     }
 
     function startApp() {
-        checkAdmin(); 
         initScorecard(); 
     }
 
