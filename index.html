@@ -195,7 +195,6 @@
     }
 
     function initScorecard() {
-        checkAdmin();
         const tbody = document.getElementById('scorecardBody');
         tbody.innerHTML = "";
         
@@ -228,4 +227,91 @@
     function adjustDrive(player, amount) {
         if (!isAdmin) return;
         drives[player] = Math.max(0, drives[player] + amount);
-        document.getElementById(`${player}Drives`).innerText = drives
+        document.getElementById(`${player}Drives`).innerText = drives[player];
+        
+        updateDriveButtons();
+        calculateMatch();
+    }
+
+    function updateDriveButtons() {
+        document.getElementById('peteAddBtn').disabled = !isAdmin || (drives.pete >= 9);
+        document.getElementById('johnAddBtn').disabled = !isAdmin || (drives.john >= 9);
+        document.getElementById('andyAddBtn').disabled = !isAdmin || (drives.andy >= 9);
+        document.getElementById('gavAddBtn').disabled = !isAdmin || (drives.gav >= 9);
+
+        updateLabel('pete', drives.pete);
+        updateLabel('john', drives.john);
+        updateLabel('andy', drives.andy);
+        updateLabel('gav', drives.gav);
+    }
+
+    function updateLabel(player, count) {
+        const lbl = document.getElementById(`${player}Status`);
+        if (count >= 9) {
+            lbl.innerText = "✅ 9/9 Clear";
+            lbl.className = "drive-status status-ok";
+        } else {
+            lbl.innerText = "⚠️ Need " + (9 - count) + " more";
+            lbl.className = "drive-status status-alert";
+        }
+    }
+
+    function calculateMatch() {
+        let pjWins = 0;
+        let agWins = 0;
+
+        courseData.forEach(h => {
+            const pInput = document.getElementById(`pGross-${h.hole}`).value;
+            const aInput = document.getElementById(`aGross-${h.hole}`).value;
+            const resTd = document.getElementById(`res-${h.hole}`);
+            
+            resTd.className = ''; 
+            resTd.innerText = '-';
+
+            if (pInput !== "" && aInput !== "") {
+                let pNet = parseInt(pInput);
+                let aNet = parseInt(aInput);
+                
+                if (shotHoles.includes(h.hole)) {
+                    aNet -= 1;
+                    document.getElementById(`aNetLbl-${h.hole}`).innerText = `Net: ${aNet}`;
+                }
+
+                if (pNet < aNet) {
+                    pjWins++;
+                    resTd.innerText = "P&J";
+                    resTd.classList.add('win-p');
+                } else if (aNet < pNet) {
+                    agWins++;
+                    resTd.innerText = "A&G";
+                    resTd.classList.add('win-a');
+                } else {
+                    resTd.innerText = "Halved";
+                }
+            } else if (shotHoles.includes(h.hole)) {
+                document.getElementById(`aNetLbl-${h.hole}`).innerText = '';
+            }
+        });
+
+        const statusDisplay = document.getElementById('matchStatus');
+        if (pjWins === agWins) {
+            statusDisplay.innerText = "All Square";
+            statusDisplay.style.color = "var(--primary)";
+        } else if (pjWins > agWins) {
+            statusDisplay.innerText = `Pete & John ${pjWins - agWins} Up`;
+            statusDisplay.style.color = "#1b5e20";
+        } else {
+            statusDisplay.innerText = `Andy & Gav ${agWins - pjWins} Up`;
+            statusDisplay.style.color = "#b7950b";
+        }
+    }
+
+    function startApp() {
+        checkAdmin(); 
+        initScorecard(); 
+    }
+
+    window.addEventListener('DOMContentLoaded', startApp);
+</script>
+</body>
+</html>
