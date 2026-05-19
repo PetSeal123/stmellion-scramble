@@ -83,7 +83,7 @@
             background-color: var(--primary);
             color: white;
             border: 2px solid var(--secondary);
-            padding: 10px 15px;
+            padding: 12px 15px;
             font-weight: bold;
             border-radius: 6px;
             cursor: pointer;
@@ -95,8 +95,12 @@
             display: none;
             color: var(--unlocked);
             font-weight: bold;
-            font-size: 0.85rem;
-            margin-top: 5px;
+            font-size: 0.9rem;
+            margin-top: 6px;
+            background: #e8f5e9;
+            padding: 8px;
+            border-radius: 4px;
+            border: 1px solid var(--unlocked);
         }
 
         .table-container {
@@ -202,7 +206,7 @@
 
 <div id="shareBox" class="share-container">
     <button class="share-btn" onclick="generateSpectatorLink()">📱 Copy Live Update Link for Group Chat</button>
-    <div id="shareToast" class="share-toast">✓ Link copied! Paste it into WhatsApp.</div>
+    <div id="shareToast" class="share-toast">✓ Link copied successfully! Paste it straight into WhatsApp.</div>
 </div>
 
 <div class="table-container">
@@ -253,13 +257,11 @@
     function loadSavedOrSharedData() {
         const urlParams = new URLSearchParams(window.location.search);
         
-        // If data is passed inside the URL link (Spectator Mode update)
         if (urlParams.has('data')) {
             try {
                 const package = JSON.parse(decodeURIComponent(urlParams.get('data')));
                 drives = package.drives;
                 
-                // Write scores straight into localStorage for continuous display
                 courseData.forEach(h => {
                     if (package.scores.p[h.hole] !== undefined) localStorage.setItem(`score_p_${h.hole}`, package.scores.p[h.hole]);
                     if (package.scores.a[h.hole] !== undefined) localStorage.setItem(`score_a_${h.hole}`, package.scores.a[h.hole]);
@@ -267,7 +269,6 @@
                 localStorage.setItem('scramble_drives', JSON.stringify(drives));
             } catch(e) { console.error("Could not parse shared sync data", e); }
         } else if (localStorage.getItem('scramble_drives')) {
-            // Otherwise fallback to existing standalone local browser stashes
             drives = JSON.parse(localStorage.getItem('scramble_drives'));
         }
         
@@ -329,12 +330,24 @@
         const stringifiedData = encodeURIComponent(JSON.stringify(package));
         const finalShareUrl = `${baseUrl}?data=${stringifiedData}`;
 
-        // Copy link to device clipboard automatically
-        navigator.clipboard.writeText(finalShareUrl).then(() => {
+        // Foolproof clipboard backup fallback for mobile phone browsers
+        const textarea = document.createElement('textarea');
+        textarea.value = finalShareUrl;
+        textarea.style.position = 'fixed'; 
+        document.body.appendChild(textarea);
+        textarea.select();
+        textarea.setSelectionRange(0, 99999);
+        
+        try {
+            document.execCommand('copy');
             const toast = document.getElementById('shareToast');
             toast.style.display = 'block';
-            setTimeout(() => { toast.style.display = 'none'; }, 3000);
-        });
+            setTimeout(() => { toast.style.display = 'none'; }, 4000);
+        } catch (err) {
+            alert("Could not copy link automatically. Please manually copy the URL bar.");
+        }
+        
+        document.body.removeChild(textarea);
     }
 
     function validateAndCalculate(holeNum, teamPrefix) {
@@ -431,7 +444,7 @@
         });
 
         const statusDisplay = document.getElementById('matchStatus');
-        if (pjWins === a&gWins) {
+        if (pjWins === agWins) {
             statusDisplay.innerText = "All Square";
             statusDisplay.style.color = "var(--primary)";
         } else if (pjWins > agWins) {
