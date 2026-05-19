@@ -10,6 +10,8 @@
             --secondary: #e2c044;
             --light: #f4f7f5;
             --dark: #111;
+            --locked: #d9534f;
+            --unlocked: #28a745;
         }
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
@@ -21,29 +23,40 @@
         header {
             background-color: var(--primary);
             color: white;
-            padding: 15px;
+            padding: 12px;
             text-align: center;
-            border-radius: 8px;
-            margin-bottom: 15px;
+            border-radius: 8px 8px 0 0;
         }
-        h1 { margin: 0; font-size: 1.4rem; }
-        h2 { margin: 5px 0 0 0; font-size: 0.9rem; color: var(--secondary); text-transform: uppercase; }
+        h1 { margin: 0; font-size: 1.3rem; }
+        h2 { margin: 3px 0 0 0; font-size: 0.85rem; color: var(--secondary); text-transform: uppercase; }
         
+        .mode-banner {
+            text-align: center;
+            padding: 6px;
+            font-weight: bold;
+            font-size: 0.85rem;
+            color: white;
+            border-radius: 0 0 8px 8px;
+            margin-bottom: 12px;
+        }
+        .mode-locked { background-color: var(--locked); }
+        .mode-unlocked { background-color: var(--unlocked); }
+
         .status-card {
             background: white;
-            padding: 15px;
+            padding: 12px;
             border-radius: 8px;
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
             text-align: center;
-            margin-bottom: 15px;
+            margin-bottom: 12px;
         }
-        .match-score { font-size: 1.8rem; font-weight: bold; color: var(--primary); margin: 5px 0; }
+        .match-score { font-size: 1.6rem; font-weight: bold; color: var(--primary); margin: 4px 0; }
         
         .drive-counters {
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 10px;
-            margin-bottom: 15px;
+            margin-bottom: 12px;
         }
         .team-box {
             background: white;
@@ -51,22 +64,29 @@
             border-radius: 8px;
             box-shadow: 0 2px 4px rgba(0,0,0,0.05);
         }
-        .team-title { font-weight: bold; font-size: 0.85rem; border-bottom: 1px solid #eee; padding-bottom: 5px; margin-bottom: 8px; }
-        .counter-row { display: flex; justify-content: space-between; align-items: center; margin: 5px 0; font-size: 0.9rem;}
-        .counter-btn { background: #e0e0e0; border: none; padding: 5px 10px; font-weight: bold; border-radius: 4px; font-size: 1.1rem; width: 30px; }
+        .team-title { font-weight: bold; font-size: 0.8rem; border-bottom: 1px solid #eee; padding-bottom: 4px; margin-bottom: 6px; }
+        .counter-row { display: flex; justify-content: space-between; align-items: center; margin: 6px 0; font-size: 0.85rem;}
+        .counter-btn { background: #e0e0e0; border: none; padding: 4px 8px; font-weight: bold; border-radius: 4px; font-size: 1rem; width: 28px; cursor: pointer; }
+        .counter-btn:disabled { opacity: 0.3; cursor: not-allowed; }
         
+        .drive-status { font-size: 0.7rem; display: block; font-weight: bold; margin-top: 1px; }
+        .status-alert { color: #d9534f; }
+        .status-ok { color: #28a745; }
+
         .table-container {
             background: white;
             border-radius: 8px;
             overflow-x: auto;
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
-        table { width: 100%; border-collapse: collapse; text-align: center; font-size: 0.9rem; }
-        th { background-color: var(--primary); color: white; padding: 10px 5px; font-size: 0.8rem; }
-        td { padding: 8px 4px; border-bottom: 1px solid #eee; }
+        table { width: 100%; border-collapse: collapse; text-align: center; font-size: 0.85rem; }
+        th { background-color: var(--primary); color: white; padding: 8px 4px; font-size: 0.75rem; }
+        td { padding: 6px 4px; border-bottom: 1px solid #eee; }
         .si-hole { background-color: #fffde7; font-weight: bold; }
-        input[type="number"] { width: 45px; padding: 6px; text-align: center; border: 1px solid #ccc; border-radius: 4px; font-size: 1.1rem; }
-        .net-score { font-size: 0.75rem; color: #cc2900; display: block; font-weight: bold; margin-top: 2px; }
+        input[type="number"] { width: 40px; padding: 5px; text-align: center; border: 1px solid #ccc; border-radius: 4px; font-size: 1rem; }
+        input[type="number"]:disabled { background-color: #f0f0f0; border-color: #e0e0e0; color: #555; opacity: 1; }
+        
+        .net-score { font-size: 0.75rem; color: #cc2900; display: block; font-weight: bold; }
         .win-p { background-color: #d4edda; font-weight: bold; color: #155724; }
         .win-a { background-color: #fff3cd; font-weight: bold; color: #856404; }
     </style>
@@ -77,45 +97,58 @@
     <h1>St Mellion Scramble</h1>
     <h2>Nicklaus Course Tracker</h2>
 </header>
+<div id="modeBanner" class="mode-banner mode-locked">👀 Read-Only Mode</div>
 
 <div class="status-card">
     <div>MATCH STATUS</div>
     <div class="match-score" id="matchStatus">All Square</div>
-    <div style="font-size: 0.8rem; color: #666;">Andy & Gav +4 shots (Holes 3, 6, 10, 15)</div>
+    <div style="font-size: 0.75rem; color: #666;">Andy & Gav +4 shots (Holes 3, 6, 10, 15)</div>
 </div>
 
 <div class="drive-counters">
     <div class="team-box">
         <div class="team-title" style="color: #1b5e20;">Pete & John (Hcp 7)</div>
         <div class="counter-row">
-            <span>Pete: <strong id="peteDrives">0</strong>/9</span>
             <div>
-                <button class="counter-btn" onclick="adjustDrive('pete', -1)">-</button>
-                <button class="counter-btn" onclick="adjustDrive('pete', 1)">+</button>
+                <span>Pete: <strong id="peteDrives">0</strong>/9</span>
+                <span id="peteStatus" class="drive-status status-alert">⚠️ Need Drives</span>
+            </div>
+            <div>
+                <button class="counter-btn admin-elem" onclick="adjustDrive('pete', -1)" disabled>-</button>
+                <button class="counter-btn admin-elem" id="peteAddBtn" onclick="adjustDrive('pete', 1)" disabled>+</button>
             </div>
         </div>
         <div class="counter-row">
-            <span>John: <strong id="johnDrives">0</strong>/9</span>
             <div>
-                <button class="counter-btn" onclick="adjustDrive('john', -1)">-</button>
-                <button class="counter-btn" onclick="adjustDrive('john', 1)">+</button>
+                <span>John: <strong id="johnDrives">0</strong>/9</span>
+                <span id="johnStatus" class="drive-status status-alert">⚠️ Need Drives</span>
+            </div>
+            <div>
+                <button class="counter-btn admin-elem" onclick="adjustDrive('john', -1)" disabled>-</button>
+                <button class="counter-btn admin-elem" id="johnAddBtn" onclick="adjustDrive('john', 1)" disabled>+</button>
             </div>
         </div>
     </div>
     <div class="team-box">
         <div class="team-title" style="color: #b7950b;">Andy & Gav (Hcp 11)</div>
         <div class="counter-row">
-            <span>Andy: <strong id="andyDrives">0</strong>/9</span>
             <div>
-                <button class="counter-btn" onclick="adjustDrive('andy', -1)">-</button>
-                <button class="counter-btn" onclick="adjustDrive('andy', 1)">+</button>
+                <span>Andy: <strong id="andyDrives">0</strong>/9</span>
+                <span id="andyStatus" class="drive-status status-alert">⚠️ Need Drives</span>
+            </div>
+            <div>
+                <button class="counter-btn admin-elem" onclick="adjustDrive('andy', -1)" disabled>-</button>
+                <button class="counter-btn admin-elem" id="andyAddBtn" onclick="adjustDrive('andy', 1)" disabled>+</button>
             </div>
         </div>
         <div class="counter-row">
-            <span>Gav: <strong id="gavDrives">0</strong>/9</span>
             <div>
-                <button class="counter-btn" onclick="adjustDrive('gav', -1)">-</button>
-                <button class="counter-btn" onclick="adjustDrive('gav', 1)">+</button>
+                <span>Gav: <strong id="gavDrives">0</strong>/9</span>
+                <span id="gavStatus" class="drive-status status-alert">⚠️ Need Drives</span>
+            </div>
+            <div>
+                <button class="counter-btn admin-elem" onclick="adjustDrive('gav', -1)" disabled>-</button>
+                <button class="counter-btn admin-elem" id="gavAddBtn" onclick="adjustDrive('gav', 1)" disabled>+</button>
             </div>
         </div>
     </div>
@@ -139,20 +172,33 @@
 
 <script>
     const courseData = [
-        { hole: 1, par: 4, si: 12 }, { hole: 2, par: 4, si: 14 }, { hole: 3, par: 4, si: 4 },
-        { hole: 4, par: 3, si: 18 }, { hole: 5, par: 5, si: 8 },  { hole: 6, par: 4, si: 2 },
-        { hole: 7, par: 4, si: 10 }, { hole: 8, par: 3, si: 16 }, { hole: 9, par: 5, si: 6 },
-        { hole: 10, par: 4, si: 3 }, { hole: 11, par: 3, si: 17 }, { hole: 12, par: 5, si: 5 },
-        { hole: 13, par: 4, si: 11 }, { hole: 14, par: 3, si: 15 }, { hole: 15, par: 4, si: 1 },
-        { hole: 16, par: 5, si: 7 }, { hole: 17, par: 4, si: 13 }, { hole: 18, par: 4, si: 9 }
+        { hole: 1, par: 4, si: 6 },  { hole: 2, par: 5, si: 14 }, { hole: 3, par: 4, si: 4 },
+        { hole: 4, par: 3, si: 16 }, { hole: 5, par: 4, si: 8 },  { hole: 6, par: 4, si: 2 },
+        { hole: 7, par: 5, si: 12 }, { hole: 8, par: 3, si: 18 }, { hole: 9, par: 4, si: 10 },
+        { hole: 10, par: 4, si: 3 }, { hole: 11, par: 3, si: 11 }, { hole: 12, par: 5, si: 5 },
+        { hole: 13, par: 4, si: 15 }, { hole: 14, par: 3, si: 17 }, { hole: 15, par: 4, si: 1 },
+        { hole: 16, par: 5, si: 13 }, { hole: 17, par: 4, si: 9 },  { hole: 18, par: 4, si: 7 }
     ];
 
     const shotHoles = [3, 6, 10, 15];
     let drives = { pete: 0, john: 0, andy: 0, gav: 0 };
+    let isAdmin = false;
+
+    function checkAdmin() {
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.get('admin') === 'sm26-pete-admin') {
+            isAdmin = true;
+            const banner = document.getElementById('modeBanner');
+            banner.innerText = "🔓 Admin Mode Active";
+            banner.className = "mode-banner mode-unlocked";
+        }
+    }
 
     function initScorecard() {
+        checkAdmin();
         const tbody = document.getElementById('scorecardBody');
-        tbody.innerHTML = ""; // Clear existing
+        tbody.innerHTML = "";
+        
         courseData.forEach(h => {
             const isShotHole = shotHoles.includes(h.hole);
             const row = document.createElement('tr');
@@ -162,75 +208,24 @@
                 <td><b>${h.hole}</b></td>
                 <td>${h.par} (${h.si})${isShotHole ? ' 🔴' : ''}</td>
                 <td>
-                    <input type="number" id="pGross-${h.hole}" min="1" placeholder="-" oninput="calculateMatch()">
+                    <input type="number" id="pGross-${h.hole}" min="1" placeholder="-" oninput="calculateMatch()" ${!isAdmin ? 'disabled' : ''}>
                 </td>
                 <td>
-                    <input type="number" id="aGross-${h.hole}" min="1" placeholder="-" oninput="calculateMatch()">
+                    <input type="number" id="aGross-${h.hole}" min="1" placeholder="-" oninput="calculateMatch()" ${!isAdmin ? 'disabled' : ''}>
                     ${isShotHole ? `<span class="net-score" id="aNetLbl-${h.hole}"></span>` : ''}
                 </td>
                 <td id="res-${h.hole}">-</td>
             `;
             tbody.appendChild(row);
         });
+
+        if (isAdmin) {
+            document.querySelectorAll('.admin-elem').forEach(el => el.removeAttribute('disabled'));
+        }
+        updateDriveButtons();
     }
 
     function adjustDrive(player, amount) {
+        if (!isAdmin) return;
         drives[player] = Math.max(0, drives[player] + amount);
-        document.getElementById(`${player}Drives`).innerText = drives[player];
-    }
-
-    function calculateMatch() {
-        let pjWins = 0;
-        let agWins = 0;
-
-        courseData.forEach(h => {
-            const pInput = document.getElementById(`pGross-${h.hole}`).value;
-            const aInput = document.getElementById(`aGross-${h.hole}`).value;
-            const resTd = document.getElementById(`res-${h.hole}`);
-            
-            resTd.className = ''; 
-            resTd.innerText = '-';
-
-            if (pInput !== "" && aInput !== "") {
-                let pNet = parseInt(pInput);
-                let aNet = parseInt(aInput);
-                
-                if (shotHoles.includes(h.hole)) {
-                    aNet -= 1;
-                    document.getElementById(`aNetLbl-${h.hole}`).innerText = `Net: ${aNet}`;
-                }
-
-                if (pNet < aNet) {
-                    pjWins++;
-                    resTd.innerText = "P&J";
-                    resTd.classList.add('win-p');
-                } else if (aNet < pNet) {
-                    agWins++;
-                    resTd.innerText = "A&G";
-                    resTd.classList.add('win-a');
-                } else {
-                    resTd.innerText = "Halved";
-                }
-            } else if (shotHoles.includes(h.hole)) {
-                document.getElementById(`aNetLbl-${h.hole}`).innerText = '';
-            }
-        });
-
-        const statusDisplay = document.getElementById('matchStatus');
-        if (pjWins === agWins) {
-            statusDisplay.innerText = "All Square";
-            statusDisplay.style.color = "var(--primary)";
-        } else if (pjWins > agWins) {
-            statusDisplay.innerText = `Pete & John ${pjWins - agWins} Up`;
-            statusDisplay.style.color = "#1b5e20";
-        } else {
-            statusDisplay.innerText = `Andy & Gav ${agWins - pjWins} Up`;
-            statusDisplay.style.color = "#b7950b";
-        }
-    }
-
-    window.onload = initScorecard;
-</script>
-
-</body>
-</html>
+        document.getElementById(`${player}Drives`).innerText = drives
