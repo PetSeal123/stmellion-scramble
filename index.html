@@ -64,7 +64,8 @@
             border-radius: 8px;
             box-shadow: 0 2px 4px rgba(0,0,0,0.05);
         }
-        .team-title { font-weight: bold; font-size: 0.8rem; border-bottom: 1px solid #eee; padding-bottom: 4px; margin-bottom: 6px; }
+        .team-title { font-weight: bold; font-size: 0.8rem; border-bottom: 1px solid #eee; padding-bottom: 4px; margin-bottom: 6px; text-align: center; }
+        .counter-label-main { text-align: center; font-size: 0.7rem; color: #666; font-weight: bold; text-transform: uppercase; margin-bottom: 6px; }
         .counter-row { display: flex; justify-content: space-between; align-items: center; margin: 6px 0; font-size: 0.85rem;}
         .counter-btn { background: #e0e0e0; border: none; padding: 4px 8px; font-weight: bold; border-radius: 4px; font-size: 1rem; width: 28px; cursor: pointer; }
         .counter-btn:disabled { opacity: 0.3; cursor: not-allowed; }
@@ -89,6 +90,7 @@
         .net-score { font-size: 0.75rem; color: #cc2900; display: block; font-weight: bold; }
         .win-p { background-color: #d4edda; font-weight: bold; color: #155724; }
         .win-a { background-color: #fff3cd; font-weight: bold; color: #856404; }
+        .blob-style { color: #d9534f; font-weight: bold; font-size: 0.8rem; }
     </style>
 </head>
 <body>
@@ -102,12 +104,14 @@
 <div class="status-card">
     <div>MATCH STATUS</div>
     <div class="match-score" id="matchStatus">All Square</div>
-    <div style="font-size: 0.75rem; color: #666;">Andy & Gav +4 shots (Holes 3, 6, 10, 15)</div>
+    <div style="font-size: 0.75rem; color: #444; font-weight: 500;">Andy & Gav +4 shots (Holes 3, 6, 10, 15) — Marked with a 🔴 below</div>
+    <div style="font-size: 0.7rem; color: #777; margin-top: 4px;">💡 Score 0 = Conceded / Blob | Max hole score allowed: 10</div>
 </div>
 
 <div class="drive-counters">
     <div class="team-box">
         <div class="team-title" style="color: #1b5e20;">Pete & John (Hcp 7)</div>
+        <div class="counter-label-main">Tee Shots Used</div>
         <div class="counter-row">
             <div>
                 <span>Pete: <strong id="peteDrives">0</strong>/9</span>
@@ -131,6 +135,7 @@
     </div>
     <div class="team-box">
         <div class="team-title" style="color: #b7950b;">Andy & Gav (Hcp 11)</div>
+        <div class="counter-label-main">Tee Shots Used</div>
         <div class="counter-row">
             <div>
                 <span>Andy: <strong id="andyDrives">0</strong>/9</span>
@@ -207,10 +212,10 @@
                 <td><b>${h.hole}</b></td>
                 <td>${h.par} (${h.si})${isShotHole ? ' 🔴' : ''}</td>
                 <td>
-                    <input type="number" id="pGross-${h.hole}" min="1" placeholder="-" oninput="calculateMatch()" ${!isAdmin ? 'disabled' : ''}>
+                    <input type="number" id="pGross-${h.hole}" min="0" max="10" placeholder="-" oninput="validateAndCalculate(${h.hole}, 'p')" ${!isAdmin ? 'disabled' : ''}>
                 </td>
                 <td>
-                    <input type="number" id="aGross-${h.hole}" min="1" placeholder="-" oninput="calculateMatch()" ${!isAdmin ? 'disabled' : ''}>
+                    <input type="number" id="aGross-${h.hole}" min="0" max="10" placeholder="-" oninput="validateAndCalculate(${h.hole}, 'a')" ${!isAdmin ? 'disabled' : ''}>
                     ${isShotHole ? `<span class="net-score" id="aNetLbl-${h.hole}"></span>` : ''}
                 </td>
                 <td id="res-${h.hole}">-</td>
@@ -222,6 +227,18 @@
             document.querySelectorAll('.admin-elem').forEach(el => el.removeAttribute('disabled'));
         }
         updateDriveButtons();
+    }
+
+    function validateAndCalculate(holeNum, teamPrefix) {
+        const input = document.getElementById(`${teamPrefix}Gross-${holeNum}`);
+        let val = input.value;
+        
+        if (val !== "") {
+            let num = parseInt(val);
+            if (num > 10) input.value = 10;
+            if (num < 0) input.value = 0;
+        }
+        calculateMatch();
     }
 
     function adjustDrive(player, amount) {
@@ -269,15 +286,30 @@
             resTd.innerText = '-';
 
             if (pInput !== "" && aInput !== "") {
-                let pNet = parseInt(pInput);
-                let aNet = parseInt(aInput);
+                let pRaw = parseInt(pInput);
+                let aRaw = parseInt(aInput);
                 
+                // Establish logic for Blobs (0 value = 99 to make it always lose)
+                let pNet = (pRaw === 0) ? 99 : pRaw;
+                let aNet = (aRaw === 0) ? 99 : aRaw;
+
+                // Apply strokes on designated holes if it wasn't an absolute blob
                 if (shotHoles.includes(h.hole)) {
-                    aNet -= 1;
-                    document.getElementById(`aNetLbl-${h.hole}`).innerText = `Net: ${aNet}`;
+                    if (aRaw !== 0) {
+                        aNet -= 1;
+                        document.getElementById(`aNetLbl-${h.hole}`).innerText = `Net: ${aNet}`;
+                    } else {
+                        document.getElementById(`aNetLbl-${h.hole}`).innerText = 'Net: BLOB';
+                    }
                 }
 
-                if (pNet < aNet) {
+                // Append text modifiers for visual display
+                let pDisplay = (pRaw === 0) ? "BLOB" : pRaw;
+                let aDisplay = (aRaw === 0) ? "BLOB" : aNet;
+
+                if (pNet === 99 && aNet === 99) {
+                    resTd.innerText = "Halved (Blob)";
+                } else if (pNet < aNet) {
                     pjWins++;
                     resTd.innerText = "P&J";
                     resTd.classList.add('win-p');
