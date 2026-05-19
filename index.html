@@ -10,8 +10,6 @@
             --secondary: #e2c044;
             --light: #f4f7f5;
             --dark: #111;
-            --locked: #d9534f;
-            --unlocked: #28a745;
         }
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
@@ -25,23 +23,12 @@
             color: white;
             padding: 12px;
             text-align: center;
-            border-radius: 8px 8px 0 0;
+            border-radius: 8px;
+            margin-bottom: 12px;
         }
         h1 { margin: 0; font-size: 1.3rem; }
         h2 { margin: 3px 0 0 0; font-size: 0.85rem; color: var(--secondary); text-transform: uppercase; }
         
-        .mode-banner {
-            text-align: center;
-            padding: 6px;
-            font-weight: bold;
-            font-size: 0.85rem;
-            color: white;
-            border-radius: 0 0 8px 8px;
-            margin-bottom: 12px;
-        }
-        .mode-locked { background-color: var(--locked); }
-        .mode-unlocked { background-color: var(--unlocked); }
-
         .status-card {
             background: white;
             padding: 12px;
@@ -74,35 +61,6 @@
         .status-alert { color: #d9534f; }
         .status-ok { color: #28a745; }
 
-        .share-container {
-            display: none;
-            text-align: center;
-            margin-bottom: 15px;
-        }
-        .share-btn {
-            background-color: var(--primary);
-            color: white;
-            border: 2px solid var(--secondary);
-            padding: 12px 15px;
-            font-weight: bold;
-            border-radius: 6px;
-            cursor: pointer;
-            width: 100%;
-            font-size: 0.95rem;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        }
-        .share-toast {
-            display: none;
-            color: var(--unlocked);
-            font-weight: bold;
-            font-size: 0.9rem;
-            margin-top: 6px;
-            background: #e8f5e9;
-            padding: 8px;
-            border-radius: 4px;
-            border: 1px solid var(--unlocked);
-        }
-
         .table-container {
             background: white;
             border-radius: 8px;
@@ -115,14 +73,12 @@
         td { padding: 6px 4px; border-bottom: 1px solid #eee; }
         .si-hole { background-color: #fffde7; font-weight: bold; }
         input[type="number"] { width: 40px; padding: 5px; text-align: center; border: 1px solid #ccc; border-radius: 4px; font-size: 1rem; }
-        input[type="number"]:disabled { background-color: #f0f0f0; border-color: #e0e0e0; color: #555; opacity: 1; }
         
         .net-score { font-size: 0.75rem; color: #cc2900; display: block; font-weight: bold; }
         .win-p { background-color: #d4edda; font-weight: bold; color: #155724; }
         .win-a { background-color: #fff3cd; font-weight: bold; color: #856404; }
         
-        .admin-footer {
-            display: none;
+        .footer-box {
             text-align: center;
             margin: 20px 0;
         }
@@ -144,13 +100,12 @@
     <h1>St Mellion Scramble</h1>
     <h2>Nicklaus Course Tracker</h2>
 </header>
-<div id="modeBanner" class="mode-banner mode-locked">👀 Read-Only Mode</div>
 
 <div class="status-card">
     <div>MATCH STATUS</div>
     <div class="match-score" id="matchStatus">All Square</div>
     <div style="font-size: 0.75rem; color: #444; font-weight: 500;">Andy & Gav +4 shots (Holes 3, 6, 10, 15) — Marked with a 🔴 below</div>
-    <div style="font-size: 0.7rem; color: #777; margin-top: 4px;">💡 Score 0 = Conceded / Blob | Max hole score allowed: 10</div>
+    <div style="font-size: 0.7rem; color: #777; margin-top: 4px;">💡 Score 0 = Blob / Conceded | Max hole score allowed: 10</div>
 </div>
 
 <div class="drive-counters">
@@ -163,8 +118,8 @@
                 <span id="peteStatus" class="drive-status status-alert">⚠️ Need Drives</span>
             </div>
             <div>
-                <button class="counter-btn admin-elem" onclick="adjustDrive('pete', -1)" disabled>-</button>
-                <button class="counter-btn admin-elem" id="peteAddBtn" onclick="adjustDrive('pete', 1)" disabled>+</button>
+                <button class="counter-btn" onclick="adjustDrive('pete', -1)">-</button>
+                <button class="counter-btn" id="peteAddBtn" onclick="adjustDrive('pete', 1)">+</button>
             </div>
         </div>
         <div class="counter-row">
@@ -173,8 +128,8 @@
                 <span id="johnStatus" class="drive-status status-alert">⚠️ Need Drives</span>
             </div>
             <div>
-                <button class="counter-btn admin-elem" onclick="adjustDrive('john', -1)" disabled>-</button>
-                <button class="counter-btn admin-elem" id="johnAddBtn" onclick="adjustDrive('john', 1)" disabled>+</button>
+                <button class="counter-btn" onclick="adjustDrive('john', -1)">-</button>
+                <button class="counter-btn" id="johnAddBtn" onclick="adjustDrive('john', 1)">+</button>
             </div>
         </div>
     </div>
@@ -187,8 +142,8 @@
                 <span id="andyStatus" class="drive-status status-alert">⚠️ Need Drives</span>
             </div>
             <div>
-                <button class="counter-btn admin-elem" onclick="adjustDrive('andy', -1)" disabled>-</button>
-                <button class="counter-btn admin-elem" id="andyAddBtn" onclick="adjustDrive('andy', 1)" disabled>+</button>
+                <button class="counter-btn" onclick="adjustDrive('andy', -1)">-</button>
+                <button class="counter-btn" id="andyAddBtn" onclick="adjustDrive('andy', 1)">+</button>
             </div>
         </div>
         <div class="counter-row">
@@ -197,16 +152,11 @@
                 <span id="gavStatus" class="drive-status status-alert">⚠️ Need Drives</span>
             </div>
             <div>
-                <button class="counter-btn admin-elem" onclick="adjustDrive('gav', -1)" disabled>-</button>
-                <button class="counter-btn admin-elem" id="gavAddBtn" onclick="adjustDrive('gav', 1)" disabled>+</button>
+                <button class="counter-btn" onclick="adjustDrive('gav', -1)">-</button>
+                <button class="counter-btn" id="gavAddBtn" onclick="adjustDrive('gav', 1)">+</button>
             </div>
         </div>
     </div>
-</div>
-
-<div id="shareBox" class="share-container">
-    <button class="share-btn" onclick="generateSpectatorLink()">📱 Copy Live Update Link for Group Chat</button>
-    <div id="shareToast" class="share-toast">✓ Link copied successfully! Paste it straight into WhatsApp.</div>
 </div>
 
 <div class="table-container">
@@ -225,8 +175,8 @@
     </table>
 </div>
 
-<div id="adminFooter" class="admin-footer">
-    <button class="clear-btn" onclick="clearAllData()">⚠️ Clear Scorecard & Drives</button>
+<div class="footer-box">
+    <button class="clear-btn" onclick="clearAllData()">⚠️ Reset Whole Scorecard</button>
 </div>
 
 <script>
@@ -241,37 +191,11 @@
 
     const shotHoles = [3, 6, 10, 15];
     let drives = { pete: 0, john: 0, andy: 0, gav: 0 };
-    let isAdmin = false;
 
-    function checkAdmin() {
-        const urlParams = new URLSearchParams(window.location.search);
-        if (urlParams.get('admin') === 'sm26-pete-admin') {
-            isAdmin = true;
-            document.getElementById('modeBanner').innerText = "🔓 Admin Mode Active";
-            document.getElementById('modeBanner').className = "mode-banner mode-unlocked";
-            document.getElementById('adminFooter').style.display = 'block';
-            document.getElementById('shareBox').style.display = 'block';
-        }
-    }
-
-    function loadSavedOrSharedData() {
-        const urlParams = new URLSearchParams(window.location.search);
-        
-        if (urlParams.has('data')) {
-            try {
-                const package = JSON.parse(decodeURIComponent(urlParams.get('data')));
-                drives = package.drives;
-                
-                courseData.forEach(h => {
-                    if (package.scores.p[h.hole] !== undefined) localStorage.setItem(`score_p_${h.hole}`, package.scores.p[h.hole]);
-                    if (package.scores.a[h.hole] !== undefined) localStorage.setItem(`score_a_${h.hole}`, package.scores.a[h.hole]);
-                });
-                localStorage.setItem('scramble_drives', JSON.stringify(drives));
-            } catch(e) { console.error("Could not parse shared sync data", e); }
-        } else if (localStorage.getItem('scramble_drives')) {
+    function loadSavedData() {
+        if (localStorage.getItem('scramble_drives')) {
             drives = JSON.parse(localStorage.getItem('scramble_drives'));
         }
-        
         document.getElementById('peteDrives').innerText = drives.pete;
         document.getElementById('johnDrives').innerText = drives.john;
         document.getElementById('andyDrives').innerText = drives.andy;
@@ -279,9 +203,7 @@
     }
 
     function initScorecard() {
-        checkAdmin();
-        loadSavedOrSharedData();
-        
+        loadSavedData();
         const tbody = document.getElementById('scorecardBody');
         tbody.innerHTML = "";
         
@@ -297,10 +219,10 @@
                 <td><b>${h.hole}</b></td>
                 <td>${h.par} (${h.si})${isShotHole ? ' 🔴' : ''}</td>
                 <td>
-                    <input type="number" id="pGross-${h.hole}" min="0" max="10" placeholder="-" value="${savedP}" oninput="validateAndCalculate(${h.hole}, 'p')" ${!isAdmin ? 'disabled' : ''}>
+                    <input type="number" id="pGross-${h.hole}" min="0" max="10" placeholder="-" value="${savedP}" oninput="validateAndCalculate(${h.hole}, 'p')">
                 </td>
                 <td>
-                    <input type="number" id="aGross-${h.hole}" min="0" max="10" placeholder="-" value="${savedA}" oninput="validateAndCalculate(${h.hole}, 'a')" ${!isAdmin ? 'disabled' : ''}>
+                    <input type="number" id="aGross-${h.hole}" min="0" max="10" placeholder="-" value="${savedA}" oninput="validateAndCalculate(${h.hole}, 'a')">
                     ${isShotHole ? `<span class="net-score" id="aNetLbl-${h.hole}"></span>` : ''}
                 </td>
                 <td id="res-${h.hole}">-</td>
@@ -308,46 +230,8 @@
             tbody.appendChild(row);
         });
 
-        if (isAdmin) {
-            document.querySelectorAll('.admin-elem').forEach(el => el.removeAttribute('disabled'));
-        }
         updateDriveButtons();
         calculateMatch();
-    }
-
-    function generateSpectatorLink() {
-        let package = {
-            drives: drives,
-            scores: { p: {}, a: {} }
-        };
-
-        courseData.forEach(h => {
-            package.scores.p[h.hole] = document.getElementById(`pGross-${h.hole}`).value;
-            package.scores.a[h.hole] = document.getElementById(`aGross-${h.hole}`).value;
-        });
-
-        const baseUrl = window.location.origin + window.location.pathname;
-        const stringifiedData = encodeURIComponent(JSON.stringify(package));
-        const finalShareUrl = `${baseUrl}?data=${stringifiedData}`;
-
-        // Foolproof clipboard backup fallback for mobile phone browsers
-        const textarea = document.createElement('textarea');
-        textarea.value = finalShareUrl;
-        textarea.style.position = 'fixed'; 
-        document.body.appendChild(textarea);
-        textarea.select();
-        textarea.setSelectionRange(0, 99999);
-        
-        try {
-            document.execCommand('copy');
-            const toast = document.getElementById('shareToast');
-            toast.style.display = 'block';
-            setTimeout(() => { toast.style.display = 'none'; }, 4000);
-        } catch (err) {
-            alert("Could not copy link automatically. Please manually copy the URL bar.");
-        }
-        
-        document.body.removeChild(textarea);
     }
 
     function validateAndCalculate(holeNum, teamPrefix) {
@@ -365,7 +249,6 @@
     }
 
     function adjustDrive(player, amount) {
-        if (!isAdmin) return;
         drives[player] = Math.max(0, drives[player] + amount);
         document.getElementById(`${player}Drives`).innerText = drives[player];
         
@@ -375,10 +258,10 @@
     }
 
     function updateDriveButtons() {
-        document.getElementById('peteAddBtn').disabled = !isAdmin || (drives.pete >= 9);
-        document.getElementById('johnAddBtn').disabled = !isAdmin || (drives.john >= 9);
-        document.getElementById('andyAddBtn').disabled = !isAdmin || (drives.andy >= 9);
-        document.getElementById('gavAddBtn').disabled = !isAdmin || (drives.gav >= 9);
+        document.getElementById('peteAddBtn').disabled = (drives.pete >= 9);
+        document.getElementById('johnAddBtn').disabled = (drives.john >= 9);
+        document.getElementById('andyAddBtn').disabled = (drives.andy >= 9);
+        document.getElementById('gavAddBtn').disabled = (drives.gav >= 9);
 
         updateLabel('pete', drives.pete);
         updateLabel('john', drives.john);
@@ -457,18 +340,14 @@
     }
 
     function clearAllData() {
-        if (confirm("Are you sure you want to reset the whole card? This cannot be undone!")) {
+        if (confirm("Are you sure you want to reset the scorecard?")) {
             localStorage.clear();
             drives = { pete: 0, john: 0, andy: 0, gav: 0 };
-            window.location.href = window.location.origin + window.location.pathname + "?admin=sm26-pete-admin";
+            initScorecard();
         }
     }
 
-    function startApp() {
-        initScorecard(); 
-    }
-
-    window.addEventListener('DOMContentLoaded', startApp);
+    window.addEventListener('DOMContentLoaded', initScorecard);
 </script>
 </body>
 </html>
