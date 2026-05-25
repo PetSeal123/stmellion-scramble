@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>St Mellion Scramble Tracker</title>
+    <title>St Mellion Scramble Tracker - Kernow</title>
     <style>
         :root {
             --primary: #1e3f20;
@@ -98,13 +98,13 @@
 
 <header>
     <h1>St Mellion Scramble</h1>
-    <h2>Nicklaus Course Tracker</h2>
+    <h2>Kernow Course Tracker</h2>
 </header>
 
 <div class="status-card">
     <div>MATCH STATUS</div>
     <div class="match-score" id="matchStatus">All Square</div>
-    <div style="font-size: 0.75rem; color: #444; font-weight: 500;">Andy & Gav +4 shots (Holes 3, 6, 10, 15) — Marked with a 🔴 below</div>
+    <div style="font-size: 0.75rem; color: #444; font-weight: 500;">Andy & Gav +5 shots (Holes 4, 6, 8, 13, 14) — Marked with a 🔴 below</div>
     <div style="font-size: 0.7rem; color: #777; margin-top: 4px;">💡 Score 0 = Blob / Conceded | Max hole score allowed: 10</div>
 </div>
 
@@ -134,7 +134,7 @@
         </div>
     </div>
     <div class="team-box">
-        <div class="team-title" style="color: #b7950b;">Andy & Gav (Hcp 11)</div>
+        <div class="team-title" style="color: #b7950b;">Andy & Gav (Hcp 12)</div>
         <div class="counter-label-main">Tee Shots Used</div>
         <div class="counter-row">
             <div>
@@ -180,16 +180,18 @@
 </div>
 
 <script>
+    // Exact official Kernow Course card configuration (Par 70 layout)
     const courseData = [
-        { hole: 1, par: 4, si: 6 },  { hole: 2, par: 5, si: 14 }, { hole: 3, par: 4, si: 4 },
-        { hole: 4, par: 3, si: 16 }, { hole: 5, par: 4, si: 8 },  { hole: 6, par: 4, si: 2 },
-        { hole: 7, par: 5, si: 12 }, { hole: 8, par: 3, si: 18 }, { hole: 9, par: 4, si: 10 },
-        { hole: 10, par: 4, si: 3 }, { hole: 11, par: 3, si: 11 }, { hole: 12, par: 5, si: 5 },
-        { hole: 13, par: 4, si: 15 }, { hole: 14, par: 3, si: 17 }, { hole: 15, par: 4, si: 1 },
-        { hole: 16, par: 5, si: 13 }, { hole: 17, par: 4, si: 9 },  { hole: 18, par: 4, si: 7 }
+        { hole: 1, par: 5, si: 13 }, { hole: 2, par: 5, si: 15 }, { hole: 3, par: 3, si: 7 },
+        { hole: 4, par: 4, si: 5 },  { hole: 5, par: 3, si: 17 }, { hole: 6, par: 4, si: 1 },
+        { hole: 7, par: 3, si: 11 }, { hole: 8, par: 5, si: 3 },  { hole: 9, par: 4, si: 9 },
+        { hole: 10, par: 4, si: 14 }, { hole: 11, par: 4, si: 8 }, { hole: 12, par: 4, si: 12 },
+        { hole: 13, par: 4, si: 2 },  { hole: 14, par: 3, si: 4 }, { hole: 15, par: 4, si: 18 },
+        { hole: 16, par: 3, si: 16 }, { hole: 17, par: 4, si: 6 }, { hole: 18, par: 4, si: 10 }
     ];
 
-    const shotHoles = [3, 6, 10, 12, 15];
+    // The 5 hardest holes on the Kernow layout (SI 1 through 5)
+    const shotHoles = [4, 6, 8, 13, 14];
     let drives = { pete: 0, john: 0, andy: 0, gav: 0 };
 
     function loadSavedData() {
@@ -202,6 +204,9 @@
         document.getElementById('gavDrives').innerText = drives.gav;
     }
 
+    /* Note: If you have old data saved in your phone from the Nicklaus course, 
+       it's highly recommended to hit the red "Reset Whole Scorecard" button 
+       at the bottom once you open the page to flush the cache. */
     function initScorecard() {
         loadSavedData();
         const tbody = document.getElementById('scorecardBody');
